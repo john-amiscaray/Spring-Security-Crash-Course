@@ -13,21 +13,27 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private JWTAuthService authService;
+    private final JWTAuthService authService;
 
-    @Autowired
-    private AppUserDetailsService userDetailsService;
+    private final AppUserDetailsService userDetailsService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public AppSecurityConfig(JWTAuthService authService, AppUserDetailsService userDetailsService,
+                             AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+        this.authService = authService;
+        this.userDetailsService = userDetailsService;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -60,13 +66,6 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder());
-    }
-
-    @Bean
-    public PasswordEncoder getPasswordEncoder(){
-
-        return new BCryptPasswordEncoder(10);
-
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 }
